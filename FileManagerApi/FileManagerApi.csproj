@@ -7,16 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Services\FileServices.cs" />
-    <Compile Remove="Services\IFileServices.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Services\FileServices.cs" />
-    <None Include="Services\IFileServices.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.20">
       <PrivateAssets>all</PrivateAssets>
