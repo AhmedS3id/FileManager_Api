@@ -1,4 +1,5 @@
 using FileManagerApi.Persistence;
+using FileManagerApi.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,8 @@ if (string.IsNullOrEmpty(connectionString))
 }
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.AddScoped<IFileService, FileService>();
 
 var app = builder.Build();
 

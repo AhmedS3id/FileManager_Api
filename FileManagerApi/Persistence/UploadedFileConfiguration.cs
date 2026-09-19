@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FileManagerApi.Persistence
 {
-    public class UploadedFileConfiguration : IEntityTypeConfiguration<UploadedFiles>
+    public class UploadedFileConfiguration : IEntityTypeConfiguration<UploadedFilesRequest>
     {
-        public void Configure(EntityTypeBuilder<UploadedFiles> builder)
+        public void Configure(EntityTypeBuilder<UploadedFilesRequest> builder)
         {
            builder.Property(x=>x.ContentTybe).HasMaxLength(250);
            builder.Property(x=>x.StoredFileName).HasMaxLength(250);
