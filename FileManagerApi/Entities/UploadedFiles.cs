@@ -1,6 +1,6 @@
 ﻿namespace FileManagerApi.Entities
 {
-    public sealed class UploadedFiles
+    public sealed class UploadedFilesRequest
     {
         public Guid Id { get; set; }= Guid.CreateVersion7();
         public string FileName { get; set; } = string.Empty;
