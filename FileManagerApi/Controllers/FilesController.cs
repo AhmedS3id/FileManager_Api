@@ -16,5 +16,11 @@ namespace FileManagerApi.Controllers
             var result = await _fileService.UploadAsync(request.File, cancellationToken);
             return Ok();
         }
+        [HttpPost("upload-files")]
+        public async Task<IActionResult> UploadMany([FromForm]UploadManyFilesRequest request, CancellationToken cancellationToken)
+        {
+            var result = await _fileService.UploadManyAsync(request.Files, cancellationToken);
+            return Ok(result);
+        }
     }
 }
