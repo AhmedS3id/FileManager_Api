@@ -3,5 +3,6 @@
     public interface IFileService
     {
         Task<Guid> UploadAsync(IFormFile file, CancellationToken cancellationToken = default);
+        Task<ICollection<Guid>> UploadManyAsync(IFormFileCollection files, CancellationToken cancellationToken = default);
     }
 }
