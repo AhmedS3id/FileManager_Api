@@ -5,7 +5,7 @@ namespace FileManagerApi.Contracts
 {
     public class LockedSignatureValidator : AbstractValidator<IFormFile>
     {
-        public static readonly string[] BlockedSignature = ["4D-5A", "2F-2A", "D0-CF"];
+        private static readonly string[] BlockedSignature = ["4D-5A", "2F-2A", "D0-CF"];
         public LockedSignatureValidator()
         {
             RuleFor(x => x)

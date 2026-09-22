@@ -4,5 +4,6 @@
     {
         Task<Guid> UploadAsync(IFormFile file, CancellationToken cancellationToken = default);
         Task<ICollection<Guid>> UploadManyAsync(IFormFileCollection files, CancellationToken cancellationToken = default);
+        Task UploadImageAsync(IFormFile Image, CancellationToken cancellationToken = default);
     }
 }
