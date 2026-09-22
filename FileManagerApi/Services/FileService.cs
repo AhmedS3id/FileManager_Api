@@ -1,25 +1,25 @@
 ﻿using FileManagerApi.Entities;
 using FileManagerApi.Persistence;
-using Microsoft.AspNetCore.Identity;
-using System.IO;
 
 namespace FileManagerApi.Services
 {
     public class FileService(IWebHostEnvironment webHostEnvironment, ApplicationDbContext context) : IFileService
     {
-        private readonly string _filePath = $"{webHostEnvironment.WebRootPath}/Uploads";
-        private readonly string _imagePath = $"{webHostEnvironment.WebRootPath}/Images";
+        private const int BufferSize = 4096;
+
+        private readonly string _filePath = Path.Combine(webHostEnvironment.WebRootPath, "Uploads");
         private readonly ApplicationDbContext _context = context;
 
-        public async Task<Guid> UploadAsync(IFormFile file , CancellationToken cancellationToken = default)
+        public async Task<Guid> UploadAsync(IFormFile file, CancellationToken cancellationToken = default)
         {
-            var uploadedFile = await SaveFile(file,cancellationToken);
+            var uploadedFile = await SaveFile(file, cancellationToken);
 
             await _context.AddAsync(uploadedFile, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             return uploadedFile.Id;
         }
+
         public async Task<ICollection<Guid>> UploadManyAsync(IFormFileCollection files, CancellationToken cancellationToken = default)
         {
             List<UploadedFiles> uploadedFiles = [];
@@ -34,57 +34,64 @@ namespace FileManagerApi.Services
 
             return uploadedFiles.Select(x => x.Id).ToList();
         }
-        public async Task UploadImageAsync(IFormFile Image, CancellationToken cancellationToken = default)
+
+        public async Task<Guid> UploadImageAsync(IFormFile image, CancellationToken cancellationToken = default)
         {
-            var path = Path.Combine(_imagePath, Image.FileName);
-            using var stream = File.Create(path);
-            await Image.CopyToAsync(stream, cancellationToken);
+            var uploadedImage = await SaveFile(image, cancellationToken);
+
+            await _context.AddAsync(uploadedImage, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return uploadedImage.Id;
         }
 
-        public async Task<(byte[] fileContent, string contentType, string fileName)> DownloadAsync(Guid Id, CancellationToken cancellationToken = default)
+        public Task<(Stream? fileContent, string contentType, string fileName)> DownloadAsync(Guid id, CancellationToken cancellationToken = default)
+            => OpenFileAsync(id, cancellationToken);
+
+        public Task<(Stream? stream, string contentType, string fileName)> StreamAsync(Guid id, CancellationToken cancellationToken = default)
+            => OpenFileAsync(id, cancellationToken);
+
+        private async Task<(Stream? stream, string contentType, string fileName)> OpenFileAsync(Guid id, CancellationToken cancellationToken)
         {
-            var file = await _context.Files.FindAsync([Id], cancellationToken: cancellationToken);
-                
-            if (file == null)
-                return ([],string.Empty,string.Empty);
+            var file = await _context.Files.FindAsync([id], cancellationToken: cancellationToken);
 
-            var path = Path.Combine(_filePath, file.StoredFileName);
-
-            MemoryStream memoryStream = new();
-            using FileStream fileStream = new(path, FileMode.Open);
-            await fileStream.CopyToAsync(memoryStream, cancellationToken);
-            memoryStream.Position = 0;
-            return (memoryStream.ToArray(), file.ContentType, file.FileName);
-        }
-        public async Task<(FileStream? stream, string contentType, string fileName)>StreamAsync(Guid Id, CancellationToken cancellationToken)
-        {
-            var file = await _context.Files.FindAsync([Id], cancellationToken: cancellationToken);
-
-            if (file == null)
+            if (file is null)
                 return (null, string.Empty, string.Empty);
 
             var path = Path.Combine(_filePath, file.StoredFileName);
 
-            var fileStream = File.OpenRead(path);
-            return (fileStream, file.ContentType, file.FileName);
+            if (!File.Exists(path))
+                return (null, string.Empty, string.Empty);
+
+            try
+            {
+                var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                return (stream, file.ContentType, file.FileName);
+            }
+            catch (IOException)
+            {
+                return (null, string.Empty, string.Empty);
+            }
         }
 
         private async Task<UploadedFiles> SaveFile(IFormFile file, CancellationToken cancellationToken = default)
         {
-            var randomFileName = Path.GetRandomFileName();
+            Directory.CreateDirectory(_filePath);
+
+            var storedFileName = Path.GetRandomFileName();
             var uploadedFile = new UploadedFiles
             {
-                FileName = file.Name,
+                FileName = file.FileName,
                 ContentType = file.ContentType,
-                StoredFileName = randomFileName,
+                StoredFileName = storedFileName,
                 FileExtension = Path.GetExtension(file.FileName)
             };
-            var path = Path.Combine(_filePath, randomFileName);
-            using var stream = File.Create(path);
+
+            var path = Path.Combine(_filePath, storedFileName);
+            await using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, BufferSize, FileOptions.Asynchronous);
             await file.CopyToAsync(stream, cancellationToken);
 
             return uploadedFile;
         }
-
     }
 }

@@ -23,7 +23,6 @@ builder.Services
     .AddFluentValidationAutoValidation()
     .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddScoped<IFileService, FileService>();
 
 var app = builder.Build();

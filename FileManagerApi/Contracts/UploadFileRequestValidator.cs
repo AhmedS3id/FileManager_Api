@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using System.Text.RegularExpressions;
 
 namespace FileManagerApi.Contracts
 {
@@ -7,6 +6,9 @@ namespace FileManagerApi.Contracts
     {
         public UploadFileRequestValidator()
         {
+            RuleFor(x => x.File)
+                .NotNull().WithMessage("A file is required.");
+
             RuleFor(x => x.File)
                 .SetValidator(new FileSizeValidator());
 

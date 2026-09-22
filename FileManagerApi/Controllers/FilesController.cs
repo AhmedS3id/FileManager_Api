@@ -11,22 +11,22 @@ namespace FileManagerApi.Controllers
         private readonly IFileService _fileService = fileService;
 
         [HttpPost("")]
-        public async Task<IActionResult> Upload([FromForm]UploadFileRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Upload([FromForm] UploadFileRequest request, CancellationToken cancellationToken)
         {
             var result = await _fileService.UploadAsync(request.File, cancellationToken);
             return CreatedAtAction(nameof(DownloadFile), new { id = result }, null);
         }
         [HttpPost("upload-files")]
-        public async Task<IActionResult> UploadMany([FromForm]UploadManyFilesRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> UploadMany([FromForm] UploadManyFilesRequest request, CancellationToken cancellationToken)
         {
             var result = await _fileService.UploadManyAsync(request.Files, cancellationToken);
-            return CreatedAtAction(nameof(DownloadFile), new { id = result }, null);
+            return StatusCode(StatusCodes.Status201Created, result);
         }
         [HttpPost("upload-image")]
-        public async Task<IActionResult> UploadImage([FromForm]UploadImageRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> UploadImage([FromForm] UploadImageRequest request, CancellationToken cancellationToken)
         {
-            await _fileService.UploadImageAsync(request.Image, cancellationToken);
-            return Created();
+            var result = await _fileService.UploadImageAsync(request.Image, cancellationToken);
+            return CreatedAtAction(nameof(DownloadFile), new { id = result }, null);
         }
         [HttpGet("download/{id}")]
         public async Task<IActionResult> DownloadFile([FromRoute] Guid id, CancellationToken cancellationToken)
@@ -40,7 +40,7 @@ namespace FileManagerApi.Controllers
         {
             var (fileContent, contentType, fileName) = await _fileService.StreamAsync(id, cancellationToken);
 
-            return fileContent != null ? File(fileContent, contentType, fileName,enableRangeProcessing:true) : NotFound();
+            return fileContent != null ? File(fileContent, contentType, fileName, enableRangeProcessing: true) : NotFound();
         }
     }
 }
