@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using System.Text.RegularExpressions;
 
 namespace FileManagerApi.Contracts
 {
@@ -22,6 +23,11 @@ namespace FileManagerApi.Contracts
                     return !BlockedSignature.Contains(signature);
                 })
                 .WithMessage("Not Allowed File Content.")
+                .When(x => x.File != null);
+
+            RuleFor(x => x.File)
+                .Must(file => Regex.IsMatch(file.FileName, @"^[^\/\\]+$"))
+                .WithMessage("File name cannot contain '/' or '\\'.")
                 .When(x => x.File != null);
         }
     }
