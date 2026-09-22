@@ -28,5 +28,12 @@ namespace FileManagerApi.Controllers
             await _fileService.UploadImageAsync(request.Image, cancellationToken);
             return Created();
         }
+        [HttpGet("download/{id}")]
+        public async Task<IActionResult> DownloadFile([FromRoute] Guid id, CancellationToken cancellationToken)
+        {
+            var (fileContent, contentType, fileName) = await _fileService.DownloadAsync(id, cancellationToken);
+
+            return fileContent != null ? File(fileContent, contentType, fileName) : NotFound();
+        }
     }
 }

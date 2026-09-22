@@ -41,6 +41,22 @@ namespace FileManagerApi.Services
             await Image.CopyToAsync(stream, cancellationToken);
         }
 
+        public async Task<(byte[] fileContent, string contentType, string fileName)> DownloadAsync(Guid Id, CancellationToken cancellationToken = default)
+        {
+            var file = await _context.Files.FindAsync([Id], cancellationToken: cancellationToken);
+                
+            if (file == null)
+                return ([],string.Empty,string.Empty);
+
+            var path = Path.Combine(_filePath, file.StoredFileName);
+
+            MemoryStream memoryStream = new();
+            using FileStream fileStream = new(path, FileMode.Open);
+            await fileStream.CopyToAsync(memoryStream, cancellationToken);
+            memoryStream.Position = 0;
+            return (memoryStream.ToArray(), file.ContentType, file.FileName);
+        }
+
         private async Task<UploadedFiles> SaveFile(IFormFile file, CancellationToken cancellationToken = default)
         {
             var randomFileName = Path.GetRandomFileName();
