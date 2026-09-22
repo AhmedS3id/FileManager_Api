@@ -14,13 +14,13 @@ namespace FileManagerApi.Controllers
         public async Task<IActionResult> Upload([FromForm]UploadFileRequest request, CancellationToken cancellationToken)
         {
             var result = await _fileService.UploadAsync(request.File, cancellationToken);
-            return Ok();
+            return CreatedAtAction(nameof(DownloadFile), new { id = result }, null);
         }
         [HttpPost("upload-files")]
         public async Task<IActionResult> UploadMany([FromForm]UploadManyFilesRequest request, CancellationToken cancellationToken)
         {
             var result = await _fileService.UploadManyAsync(request.Files, cancellationToken);
-            return Ok(result);
+            return CreatedAtAction(nameof(DownloadFile), new { id = result }, null);
         }
         [HttpPost("upload-image")]
         public async Task<IActionResult> UploadImage([FromForm]UploadImageRequest request, CancellationToken cancellationToken)
@@ -34,6 +34,13 @@ namespace FileManagerApi.Controllers
             var (fileContent, contentType, fileName) = await _fileService.DownloadAsync(id, cancellationToken);
 
             return fileContent != null ? File(fileContent, contentType, fileName) : NotFound();
+        }
+        [HttpGet("stream/{id}")]
+        public async Task<IActionResult> StreamFile([FromRoute] Guid id, CancellationToken cancellationToken)
+        {
+            var (fileContent, contentType, fileName) = await _fileService.StreamAsync(id, cancellationToken);
+
+            return fileContent != null ? File(fileContent, contentType, fileName,enableRangeProcessing:true) : NotFound();
         }
     }
 }

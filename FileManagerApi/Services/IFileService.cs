@@ -6,5 +6,6 @@
         Task<ICollection<Guid>> UploadManyAsync(IFormFileCollection files, CancellationToken cancellationToken = default);
         Task UploadImageAsync(IFormFile Image, CancellationToken cancellationToken = default);
         Task<(byte[] fileContent,string contentType,string fileName)> DownloadAsync(Guid Id, CancellationToken cancellationToken = default);
+        Task<(FileStream? stream,string contentType,string fileName)> StreamAsync(Guid Id, CancellationToken cancellationToken = default);
     }
 }

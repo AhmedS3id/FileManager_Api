@@ -56,6 +56,18 @@ namespace FileManagerApi.Services
             memoryStream.Position = 0;
             return (memoryStream.ToArray(), file.ContentType, file.FileName);
         }
+        public async Task<(FileStream? stream, string contentType, string fileName)>StreamAsync(Guid Id, CancellationToken cancellationToken)
+        {
+            var file = await _context.Files.FindAsync([Id], cancellationToken: cancellationToken);
+
+            if (file == null)
+                return (null, string.Empty, string.Empty);
+
+            var path = Path.Combine(_filePath, file.StoredFileName);
+
+            var fileStream = File.OpenRead(path);
+            return (fileStream, file.ContentType, file.FileName);
+        }
 
         private async Task<UploadedFiles> SaveFile(IFormFile file, CancellationToken cancellationToken = default)
         {
